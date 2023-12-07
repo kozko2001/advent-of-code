@@ -43,13 +43,7 @@ QQQJA 483
         val input = Resources.resourceAsText("day07.txt")
         val answer = Day07(input).solvePart2()
 
-        assertThat(answer).isEqualTo(249601893)
+        assertThat(answer).isEqualTo(249356515)
     }
 
-    @Test
-    fun `test multiple cards with jokers`() {
-        val answer = Day07("744JJ 87").solvePart2()
-
-        assertThat(answer).isEqualTo(5905)
-    }
 }

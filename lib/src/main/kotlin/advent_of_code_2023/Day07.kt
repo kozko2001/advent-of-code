@@ -117,6 +117,7 @@ class Day07(private val input: String) {
             else -> cards[index].value
         }
 
+
     fun jokerWildcardProbability(cards: List<Card>): List<List<Card>> {
         val countOfJokers = cards.count { c -> c == Card.J }
         val otherCards = cards.firstOrNull { c -> c != Card.J }
