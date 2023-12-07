@@ -19,12 +19,11 @@ class Day06InputParser : Grammar<InputDay06>() {
     val number by num use {
         text.toInt()
     }
-    val ws_number = skip(optional(ws)) and number
-    val listOfNumbers by oneOrMore(ws_number)
+    val wsParser = skip(optional(ws)) and number
+    val listOfNumbers by oneOrMore(wsParser)
 
-    val timeLineParser = skip(time) and listOfNumbers use { this }
-    val distanceLineParser = skip(distance) and listOfNumbers use { this }
-    override val rootParser by timeLineParser and skip(enterParser) and distanceLineParser use {
+    val timeLineParser = skip(time or distance) and listOfNumbers use { this }
+    override val rootParser by timeLineParser and skip(enterParser) and timeLineParser use {
         val x = this.t1.zip(this.t2).map { (time, distance) ->
             RaceDay06(time, distance)
         }
@@ -37,9 +36,7 @@ class Day06(private val input: String) {
 
     fun countPossibleWaysToWinARace(duration: Long, maxScore: Long): Int =
         (1..< duration).count { holdTime ->
-            val velocity = holdTime
-            val remindTime = duration - velocity
-            val move = velocity * remindTime
+            val move = holdTime * (duration - holdTime)
 
             move > maxScore
         }
