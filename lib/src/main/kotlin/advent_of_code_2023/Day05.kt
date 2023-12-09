@@ -63,37 +63,34 @@ class Day05(private val input: String) {
     val parser = Day05InputParser()
 
     fun applyTransformation(x: Long, t: RangeDay05): Long {
-        if ((t.source ..< t.source + t.length ).contains(x)) {
-            return x - t.source + t.destination
+        return if (x in t.source until t.source + t.length) {
+            x - t.source + t.destination
+        } else {
+            x
         }
-        return x
     }
 
     fun transformSeed(seed: Long, transforms: List<TransformDay05>): Long {
-        var s = seed
-        transforms.map { transform ->
-            val range = transform.ranges.firstOrNull() { applyTransformation(s, it) != s }
-            range?.let { r ->
-                s = applyTransformation(s, r)
-            }
+        return transforms.fold(seed) { acc, transform ->
+            transform.ranges.firstOrNull { applyTransformation(acc, it) != acc }
+                    ?.let { applyTransformation(acc, it) }
+                    ?: acc
         }
-        return s
     }
 
     fun solvePart1(): Int {
         val puzzle = parser.parseToEnd(input)
 
-        val p = puzzle.seeds.map { transformSeed(it, puzzle.transform)}
+        return puzzle.seeds.minOf { transformSeed(it, puzzle.transform)}.toInt()
 
-        return p.min().toInt()
     }
 
     fun solvePart2(): Long {
         val puzzle = parser.parseToEnd(input)
-        val seedsRange = puzzle.seeds.chunked(2).map { it[0] ..< it[0] + it[1] }
+        val seedsRange = puzzle.seeds.chunked(2).map { it[0] until it[0] + it[1] }
 
         // brute force for each seed using co-routines
-        val x = runBlocking(Dispatchers.Default) {
+        return runBlocking(Dispatchers.Default) {
           seedsRange.map { seedRange ->
                 async {
                     seedRange.minOf {
@@ -101,9 +98,8 @@ class Day05(private val input: String) {
                     }
                 }
             }.awaitAll()
-        }
+        }.min()
 
-        return x.min()
     }
 
 

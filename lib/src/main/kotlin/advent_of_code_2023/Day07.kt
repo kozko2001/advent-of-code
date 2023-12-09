@@ -127,20 +127,8 @@ class Day07(private val input: String) {
             5 -> listOf(listOf(Card.A, Card.A, Card.A, Card.A, Card.A))
             else -> {
                 val i = cards.indexOfFirst { c -> c == Card.J }
-                val possibleCards = listOf(
-                    Card.A,
-                    Card.Q,
-                    Card.T,
-                    Card.K,
-                    Card.Nine,
-                    Card.Eight,
-                    Card.Seven,
-                    Card.Six,
-                    Card.Five,
-                    Card.Four,
-                    Card.Three,
-                    Card.Two,
-                )
+                val possibleCards = enumValues<Card>().filter { it != Card.J }
+
                 possibleCards.map { wildcard ->
                     cards.mapIndexed { index, card ->
                         when (index) {
