@@ -4,5 +4,6 @@ pkgs.mkShell {
   packages = with pkgs; [
     gradle
     kotlin-language-server
+    jetbrains.idea-community
   ];
 }
