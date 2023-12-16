@@ -35,51 +35,29 @@ class Day16(private val input: String) {
         South,
         West,
     }
+
+    val Reflections = mapOf(
+        Pair(CellType.SplitterH, Direction.North) to listOf(Direction.West, Direction.East),
+        Pair(CellType.SplitterH, Direction.South) to listOf(Direction.West, Direction.East),
+        Pair(CellType.SplitterV, Direction.West) to listOf(Direction.North, Direction.South),
+        Pair(CellType.SplitterV, Direction.East) to listOf(Direction.North, Direction.South),
+        Pair(CellType.MirrorA, Direction.North) to listOf(Direction.East),
+        Pair(CellType.MirrorA, Direction.South) to listOf(Direction.West),
+        Pair(CellType.MirrorA, Direction.West) to listOf(Direction.South),
+        Pair(CellType.MirrorA, Direction.East) to listOf(Direction.North),
+        Pair(CellType.MirrorB, Direction.North) to listOf(Direction.West),
+        Pair(CellType.MirrorB, Direction.South) to listOf(Direction.East),
+        Pair(CellType.MirrorB, Direction.West) to listOf(Direction.North),
+        Pair(CellType.MirrorB, Direction.East) to listOf(Direction.South),
+    )
+
     enum class CellType {
-        SplitterH {
-            override fun directions(dir: Direction): List<Direction> {
-                return if (dir == Direction.North || dir == Direction.South) {
-                    listOf(Direction.West, Direction.East)
-                } else {
-                    listOf(dir)
-                }
-            }
-        },
-        SplitterV {
-            override fun directions(dir: Direction): List<Direction> {
-                return if (dir == Direction.West || dir == Direction.East) {
-                    listOf(Direction.North, Direction.South)
-                } else {
-                    listOf(dir)
-                }
-            }
-        },
-        MirrorA {
-            override fun directions(dir: Direction): List<Direction> {
-                return listOf(
-                    when (dir) {
-                        Direction.North -> Direction.East
-                        Direction.South -> Direction.West
-                        Direction.West -> Direction.South
-                        Direction.East -> Direction.North
-                    },
-                )
-            }
-        },
-        MirrorB {
-            override fun directions(dir: Direction): List<Direction> {
-                return listOf(
-                    when (dir) {
-                        Direction.North -> Direction.West
-                        Direction.South -> Direction.East
-                        Direction.West -> Direction.North
-                        Direction.East -> Direction.South
-                    },
-                )
-            }
-        }, ;
-        abstract fun directions(dir: Direction): List<Direction>
+        SplitterH,
+        SplitterV,
+        MirrorA,
+        MirrorB,
     }
+
     class Parser : Grammar<Input>() {
         val enter by regexToken("\\n|\\r")
         val splitterH by literalToken("-")
@@ -112,29 +90,32 @@ class Day16(private val input: String) {
         }
     }
 
-    var pointsSeen: MutableSet<Pair<Direction, Point2D>> = mutableSetOf()
-
     fun followBeam(mirrors: Map<Point2D, CellType>, boardSize: Point2D, pos: Point2D, direction: Direction): Set<Point2D> {
-        if ((pos.x > boardSize.x || pos.x < 0 || pos.y > boardSize.y || pos.y < 0) && pointsSeen.isEmpty().not()) {
-            return setOf()
-        }
-        val key = Pair(direction, pos)
-        if (key in pointsSeen) {
-            return setOf()
-        }
-        pointsSeen.add(key)
+        val pointsSeen: MutableSet<Pair<Direction, Point2D>> = mutableSetOf()
 
-        val nextPos = pos.nextByDirection(direction)
-        val nextCell = mirrors[nextPos]
+        val queue = ArrayDeque<Pair<Direction, Point2D>>()
+        queue.add(Pair(direction, pos))
 
-        val newDirections = nextCell.let {
-            it?.directions(direction)
-        } ?: listOf(direction)
+        while (queue.isEmpty().not()) {
+            val current = queue.removeFirst()
+            val (currDirection, currPos) = current
 
-        val points = newDirections.flatMap {
-            followBeam(mirrors, boardSize, nextPos, it)
+            val inBoard = (currPos.x <= boardSize.x && currPos.x >= 0 && currPos.y <= boardSize.y && currPos.y >= 0) || pointsSeen.isEmpty()
+            val alreadySeen = current in pointsSeen
+
+            if (inBoard && !alreadySeen) {
+                pointsSeen.add(current)
+                val nextPos = currPos.nextByDirection(currDirection)
+                val nextCell = mirrors[nextPos]
+
+                val nextDirections = nextCell?.let {
+                    Reflections[Pair(it, currDirection)]
+                } ?: listOf(currDirection)
+
+                queue.addAll(nextDirections.map { Pair(it, nextPos) })
+            }
         }
-        return (points + listOf(pos)).toSet().distinct().toSet()
+        return pointsSeen.map { it.second }.toSet()
     }
 
     fun print(map: List<Point2D>, boardSize: Point2D): String {
@@ -164,14 +145,8 @@ class Day16(private val input: String) {
         val startPoints = (0..puzzle.size.x).flatMap { listOf(Pair(Point2D(it, -1), Direction.South), Pair(Point2D(it, puzzle.size.y + 1), Direction.North)) } +
             (0..puzzle.size.y).flatMap { listOf(Pair(Point2D(-1, it), Direction.East), Pair(Point2D(puzzle.size.x + 1, it), Direction.West)) }
 
-        val p = startPoints.map { (startPos, direction) ->
-            println("$startPos $direction")
-            pointsSeen = mutableSetOf()
-
-            followBeam(m, puzzle.size, startPos, direction)
-                .filter { it.x >= 0 && it.y >= 0 }
-        }
-        val pp = p.map { it.distinct().count() }
-        return pp.max()
+        return startPoints.map { (startPos, direction) ->
+            followBeam(m, puzzle.size, startPos, direction).count { it.x >= 0 && it.y >= 0 }
+        }.max()
     }
 }
