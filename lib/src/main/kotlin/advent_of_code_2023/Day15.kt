@@ -23,13 +23,12 @@ class Day15(private val input: String) {
                 }
             } else {
                 val l = lense.firstOrNull { it.second.label == s.label }
-                if(l != null) {
+                if (l != null) {
                     lense = lense.filter { it.first != l.first } + listOf(Pair(l.first, s))
                 } else {
-                    val newPos = if(lense.isEmpty()) 1 else { lense.maxOf { it.first } + 1}
+                    val newPos = if (lense.isEmpty()) 1 else { lense.maxOf { it.first } + 1 }
                     lense = lense + Pair(newPos, s)
                 }
-
             }
         }
     }
@@ -64,7 +63,7 @@ class Day15(private val input: String) {
             b.apply(it)
         }
 
-        val r = boxes.flatMap{ box ->
+        val r = boxes.flatMap { box ->
             box.lense.map { it.second.focalLength * it.first * (box.id + 1) }
         }
         return r.sum()
