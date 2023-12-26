@@ -53,8 +53,7 @@ class Day23Test {
     fun `Part 2 example`() {
         val answer = Day23(testInput).solvePart2()
 
-
-        assertThat(answer).isEqualTo(0)
+        assertThat(answer).isEqualTo(154)
     }
 
     @Test
@@ -62,6 +61,6 @@ class Day23Test {
         val input = Resources.resourceAsText("day23.txt")
         val answer = Day23(input).solvePart2()
 
-        assertThat(answer).isEqualTo(0)
+        assertThat(answer).isEqualTo(6246)
     }
 }
