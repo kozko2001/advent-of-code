@@ -40,33 +40,24 @@
 (def bag {:red 12 :green 13 :blue 14})
 
 (defn impossible-draw [draws bag]
-  (every? (fn [draw]
-            (and
-             (<= (:green draw) (:green bag))
-             (<= (:blue draw) (:blue bag))
-             (<= (:red draw) (:red bag))))
-          draws))
+  (every? (fn [g] (every? #(<= (% g) (% bag))  [:green :blue :red])) draws))
 
 (defn part1 [input]
-  (let [ast (parser input)
-        games (transform ast)
-        possible-games (filter (fn [game] (impossible-draw (:sets game) bag)) games)
-        ids (map (fn [game] (:id game)) possible-games)]
-    (reduce + ids)))
+  (->> (parser input)
+       transform
+       (filter #(impossible-draw (:sets %) bag))
+       (map :id)
+       (reduce +)))
 
 (defn minimum-possible-bag [draws]
-  (let [green (apply max (map (fn [draw] (:green draw)) draws))
-        red (apply max (map (fn [draw] (:red draw)) draws))
-        blue (apply max (map (fn [draw] (:blue draw)) draws))]
-    {:green green :blue blue :red red}))
+  (apply merge-with max draws))
 
 (defn power-cubes [bag]
-  (* (:green bag) (:blue bag) (:red bag)))
+  (apply * (vals bag)))
 
 (defn part2 [input]
-  (let [ast (parser input)
-        games (transform ast)
-        draws (map (fn [game] (minimum-possible-bag (:sets game))) games)
-        powers (map power-cubes draws)]
-    (reduce + powers)))
-
+  (->> (parser input)
+       transform
+       (map #(minimum-possible-bag (:sets %)))
+       (map power-cubes)
+       (reduce +)))
