@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 nom = "7.0"
+regex = "1.10.2"
 
 [[bin]]
 name = "day05"
@@ -17,3 +18,7 @@ path = "./src/2024/day01.rs"
 [[bin]]
 name = "day02"
 path = "./src/2024/day02.rs"
+
+[[bin]]
+name = "day03"
+path = "./src/2024/day03.rs"
